@@ -1,130 +1,536 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Treasure Hunt — Foldable Cards</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400;1,500;1,600&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>A Quest For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
 <style>
-  @page { size: A4 portrait; margin: 12mm; }
-  *{box-sizing:border-box}
-  body{font-family:'Quicksand',sans-serif;margin:0;background:#f4e7ec;color:#7a2a47}
-  .page{max-width:190mm;margin:0 auto}
-  .page.brk{break-after:page;page-break-after:always}
-  .guide{text-align:center;padding:6px 14px 10px}
-  .guide h1{font-family:'Cormorant Garamond',serif;font-weight:600;color:#b13e69;font-size:30px;margin:0}
-  .guide p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14.5px;color:#a8688a;margin:5px auto 0}
-  .hide{font-family:'Quicksand';font-weight:600;font-size:11.5px;color:#b9863a;margin:6px auto 0;letter-spacing:.01em}
-  .card{position:relative;display:flex;align-items:stretch;height:80mm;margin:0 auto 9mm;border:2px solid #d8ab46;border-radius:16px;
-    background:linear-gradient(160deg,#fff7fb 0%,#fde7ee 60%,#fad9e5 100%);overflow:hidden;break-inside:avoid;page-break-inside:avoid;box-shadow:0 5px 14px rgba(177,62,105,.12)}
-  .panel{flex:1;position:relative;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-  .ribbon{color:#d4537e;letter-spacing:.3em;font-size:12px;margin-bottom:3px}
-  .tnum{font-family:'Cormorant Garamond',serif;letter-spacing:.26em;text-transform:uppercase;font-size:11px;color:#c2557e}
-  .gift{font-family:'Cormorant Garamond',serif;font-weight:600;color:#b13e69;font-size:24px;line-height:1.1;margin:2px 0 8px}
-  .note{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.45;color:#7a2a47;margin:0 4px 7px}
-  .sign{font-family:'Cormorant Garamond',serif;font-style:italic;color:#c2557e;font-size:16px}
-  .fold{width:0;border-left:2px dashed #d99bb0;position:relative}
-  .fold span{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:9px;letter-spacing:.3em;
-    text-transform:uppercase;color:#c59bb0;background:#fde7ee;padding:3px 6px}
-  .scanttl{font-family:'Cormorant Garamond',serif;font-size:16px;line-height:1.3;color:#7a2a47;margin-bottom:8px}
-  .qr{width:108px;height:108px;background:#fff;padding:5px;border:1px solid #f0c4d4;border-radius:9px}
-  .code{font-family:'Quicksand';font-weight:700;letter-spacing:.16em;font-size:16px;color:#7a2a47;margin-top:9px;word-break:break-all}
-  .corner{position:absolute;font-size:12px;color:#e8a7c0}
-  .corner.gold{color:#d8ab46}
-  .corner.tl{top:8px;left:11px}.corner.tr{top:8px;right:11px}
-  @media screen{ body{padding:14px 0 40px} .page{background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.06);padding:10px;margin-bottom:20px} }
-</style></head><body>
-  <div class="page brk">
-    <div class="guide">
-      <h1>Her treasure cards · page 1</h1>
-      <p>Print both pages, cut each card along the border, then fold in half on the dashed line.</p>
-      <p class="hide">★ Give her the rose <b>“to begin”</b> card first — it opens the hunt on her phone. Then hide: ① necklace · controller drawer &nbsp; ② heels · cloth wardrobe &nbsp; ③ dress · bedroom cupboard &nbsp; ④ under TUTU's cat tree</p>
+:root{
+  --rose:#d4537e; --rose-deep:#b13e69; --ink:#7a2a47; --ink-soft:#a8688a;
+  --gold:#cda23a; --gold-deep:#b9863a; --cream:#fff4f8; --line:#ecc4d4; --line-soft:#f3d6e0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:'Quicksand',system-ui,sans-serif;color:var(--ink);
+  background:linear-gradient(165deg,#fdf2f5 0%,#fde7ee 50%,#fad9e5 100%);overflow:hidden}
+.app{position:relative;width:100%;height:100vh;height:100dvh;max-width:480px;margin:0 auto;overflow:hidden}
+
+.aura{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(80% 50% at 20% 6%,#fff6f1 0%,rgba(255,246,241,0) 60%),
+            radial-gradient(85% 55% at 100% 24%,#ffdfeb 0%,rgba(255,223,235,0) 62%),
+            radial-gradient(120% 65% at 50% 108%,#ffccdd 0%,rgba(255,204,221,0) 60%);}
+.field{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.fh{position:absolute;bottom:-30px;color:#e58bab;opacity:0;animation:floatUp linear infinite}
+.tw{position:absolute;color:#f0b9cd;animation:twinkle ease-in-out infinite}
+@keyframes floatUp{0%{transform:translateY(0) scale(.7);opacity:0}12%{opacity:.5}100%{transform:translateY(-110vh) scale(1.1) rotate(14deg);opacity:0}}
+@keyframes twinkle{0%,100%{opacity:.1;transform:scale(.6)}50%{opacity:.65;transform:scale(1.05)}}
+
+.screen{position:absolute;inset:0;z-index:1;display:none;flex-direction:column;align-items:center;
+  padding:env(safe-area-inset-top) 18px 22px;opacity:0;transition:opacity .5s ease}
+.screen.on{display:flex;opacity:1}
+
+.serif{font-family:'Cormorant Garamond',serif}
+.script{font-family:'Cormorant Garamond',serif;font-weight:600;color:var(--rose-deep);line-height:1.04}
+.eyebrow{font-family:'Cormorant Garamond',serif;letter-spacing:.3em;text-transform:uppercase;font-size:13px;color:var(--ink-soft)}
+
+.btn{font-family:'Quicksand',sans-serif;font-weight:600;font-size:15px;border:none;border-radius:40px;
+  padding:14px 26px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:transform .15s,box-shadow .2s}
+.btn:active{transform:scale(.96)}
+.btn-primary{color:#fff;background:linear-gradient(135deg,#e0608c,#c63f74);box-shadow:0 10px 26px rgba(198,63,116,.4)}
+.btn-ghost{color:var(--rose-deep);background:#fff;border:1.5px solid var(--line);box-shadow:0 6px 16px rgba(212,83,126,.12)}
+.iconbtn{position:absolute;top:calc(env(safe-area-inset-top) + 12px);width:40px;height:40px;border-radius:50%;
+  border:1.5px solid var(--line);background:rgba(255,255,255,.92);color:var(--rose);display:flex;align-items:center;justify-content:center;
+  font-size:18px;cursor:pointer;z-index:8;box-shadow:0 4px 12px rgba(212,83,126,.18)}
+
+#cover{justify-content:center;text-align:center}
+.emblem{width:74px;height:74px;border-radius:50%;border:2px solid var(--gold);background:#fff0f5;
+  display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 18px;
+  box-shadow:0 0 0 8px rgba(205,162,58,.12);animation:beat 2.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}40%{transform:scale(1.08)}}
+#coverTitle{font-size:64px;margin:6px 0 4px;letter-spacing:.01em}
+.coverSub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:19px;color:var(--ink);max-width:300px;margin:14px auto 26px;line-height:1.5}
+
+/* MAP — fills the screen */
+#map{justify-content:flex-start;padding:0}
+.maptopbar{position:absolute;top:0;left:0;right:0;z-index:7;text-align:center;
+  padding:calc(env(safe-area-inset-top) + 8px) 12px 10px;
+  background:linear-gradient(rgba(253,238,243,.97) 52%,rgba(253,238,243,0));pointer-events:none}
+.maptopbar .script{font-size:28px}
+.progress{font-family:'Cormorant Garamond',serif;letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:var(--ink-soft);margin-top:1px}
+.tip{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--rose-deep);margin-top:3px;min-height:20px}
+.mapfield{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.stagewrap{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top) + 86px);bottom:0;overflow:hidden}
+.stage{position:absolute;left:0;top:0;width:460px;height:880px;transform-origin:top left}
+.stage svg.map{position:absolute;inset:0}
+.node{position:absolute;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#fff6ee;border:2.5px solid #e6a7bd;color:#b46584;z-index:3;cursor:default;
+  transition:transform .35s,background .45s,border-color .45s,color .45s,box-shadow .45s}
+.node .ic{display:flex;align-items:center;justify-content:center}
+.node svg{width:27px;height:27px}
+.node.done{background:#fff3da;border-color:var(--gold);color:var(--gold-deep)}
+.node.active{cursor:pointer;background:#ffe3ec;border-color:var(--rose);color:var(--rose-deep);animation:glow 1.7s ease-in-out infinite}
+.node.active:active{transform:scale(.92)}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(212,83,126,0)}50%{box-shadow:0 0 22px 7px rgba(212,83,126,.5)}}
+.node .tag{position:absolute;top:52px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--rose-deep);opacity:0;transition:opacity .3s}
+.node.active .tag{opacity:1;animation:tagb 1.6s ease-in-out infinite}
+@keyframes tagb{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
+.avatar{position:absolute;left:0;top:0;width:60px;height:60px;z-index:5;offset-rotate:0deg;offset-anchor:50% 50%}
+.avatar .ring{width:60px;height:60px;border-radius:50%;border:3px solid var(--gold);background:#ffeaf1;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;color:#c87a98;font-size:28px;box-shadow:0 0 0 3px #f4bcd0,0 8px 18px rgba(177,62,105,.3)}
+.avatar .ring img{width:100%;height:100%;object-fit:cover}
+.avatar.walking .ring{animation:walkbob .42s ease-in-out infinite}
+@keyframes walkbob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-6px) rotate(4deg)}}
+.step{position:absolute;color:#e58bab;font-size:15px;opacity:0;z-index:2;animation:stepfade 1.4s ease-out forwards}
+@keyframes stepfade{0%{opacity:0;transform:scale(.4)}25%{opacity:.8}100%{opacity:0;transform:scale(1.1)}}
+
+#clue{justify-content:flex-start}
+.cluecard{margin-top:64px;width:100%;max-width:360px;background:var(--cream);border:1px solid var(--line);
+  border-radius:24px;padding:24px 22px 22px;box-shadow:0 20px 50px rgba(177,62,105,.18);position:relative;overflow:hidden}
+.cluecard:before{content:"";position:absolute;inset:6px;border:1px solid var(--line-soft);border-radius:18px;pointer-events:none}
+.gifticon{font-size:40px;text-align:center;margin-bottom:4px}
+.cluelabel{text-align:center;font-family:'Cormorant Garamond',serif;letter-spacing:.18em;text-transform:uppercase;font-size:12px;color:var(--rose)}
+.riddle{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:23px;line-height:1.42;text-align:center;color:var(--ink);margin:12px 4px 20px}
+.hints{display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+.hintbtn{font-family:'Quicksand';font-weight:600;font-size:14px;color:var(--rose-deep);background:#fff;border:1.5px solid var(--line);
+  border-radius:14px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;transition:background .2s,transform .15s}
+.hintbtn:active{transform:scale(.98)}
+.hintbtn.open{background:#fbe9f0;border-color:var(--rose);color:var(--ink);font-weight:500;font-style:italic;font-family:'Cormorant Garamond',serif;font-size:17px}
+.hintbtn .lvl{font-family:'Quicksand';font-style:normal;font-weight:700;font-size:12px;color:var(--rose);min-width:54px}
+.scanrow{text-align:center}
+.backbtn{position:absolute;top:calc(env(safe-area-inset-top) + 14px);left:18px}
+.glassrow{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--rose-deep);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px}
+.sandglass{display:inline-block;animation:flip 1.1s ease-in-out infinite}
+@keyframes flip{0%,55%{transform:rotate(0)}75%,100%{transform:rotate(180deg)}}
+
+.overlay{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  background:rgba(74,21,40,.55);backdrop-filter:blur(3px);padding:22px}
+.overlay.on{display:flex}
+.sheet{width:100%;max-width:360px;background:var(--cream);border-radius:26px;padding:24px 22px;text-align:center;
+  box-shadow:0 30px 70px rgba(0,0,0,.35);position:relative}
+#reader{width:100%;border-radius:16px;overflow:hidden;margin:6px 0 14px;min-height:200px;background:#1a1014}
+.codeinput{font-family:'Quicksand';font-weight:700;letter-spacing:.12em;text-align:center;font-size:18px;color:var(--ink);
+  text-transform:uppercase;border:1.5px solid var(--line);border-radius:14px;padding:12px;width:100%;outline:none;background:#fff}
+.codeinput:focus{border-color:var(--rose)}
+.scanmsg{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--rose-deep);min-height:20px;margin:10px 0 4px}
+
+#unlock .sheet{background:transparent;box-shadow:none}
+.chest{position:relative;width:200px;height:200px;margin:0 auto}
+.rays{position:absolute;inset:-30px;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(255,235,180,0),rgba(255,235,180,.55),rgba(255,235,180,0) 30%,rgba(255,235,180,.55) 50%,rgba(255,235,180,0) 70%,rgba(255,235,180,.55),rgba(255,235,180,0));
+  opacity:0;animation:rayspin 6s linear infinite}
+.rays.show{opacity:1}
+@keyframes rayspin{to{transform:rotate(360deg)}}
+.locket{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:120px}
+.lh{position:absolute;width:120px;height:120px;font-size:120px;line-height:120px;text-align:center;transition:transform .7s cubic-bezier(.5,-0.3,.3,1.4),opacity .6s}
+.giftpop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);font-size:64px;transition:transform .6s cubic-bezier(.4,1.6,.4,1)}
+.giftpop.show{transform:translate(-50%,-50%) scale(1)}
+.unlocktitle{font-family:'Cormorant Garamond',serif;font-weight:600;color:#fff;font-size:36px;margin:14px 0 2px;text-shadow:0 4px 18px rgba(0,0,0,.3);opacity:0;transition:opacity .5s}
+.unlocktitle.show{opacity:1}
+.unlocksub{font-family:'Cormorant Garamond',serif;font-style:italic;color:#ffe3ee;font-size:20px;opacity:0;transition:opacity .5s .2s}
+.unlocksub.show{opacity:1}
+
+#finale{justify-content:center;text-align:center}
+.bdayline{font-family:'Cormorant Garamond',serif;font-weight:600;color:var(--rose-deep);line-height:1.05}
+.bdayName-letter{display:inline-block;opacity:0;transform:translateY(24px) rotate(-8deg);animation:letterin .6s cubic-bezier(.3,1.4,.4,1) forwards}
+@keyframes letterin{to{opacity:1;transform:translateY(0) rotate(0)}}
+.finaleMsg{font-family:'Cormorant Garamond',serif;font-size:21px;line-height:1.55;color:var(--ink);max-width:330px;margin:20px auto 8px}
+.finaleMsg b{font-weight:600;color:var(--rose-deep)}
+.ribbon{font-size:32px;margin:6px 0}
+.confcanvas{position:absolute;inset:0;z-index:18;pointer-events:none}
+
+.toast{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) translateY(40px);z-index:30;
+  background:rgba(255,255,255,.96);border:1.5px solid var(--line);border-radius:22px;padding:10px 18px;max-width:300px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--rose-deep);text-align:center;
+  box-shadow:0 14px 34px rgba(177,62,105,.25);opacity:0;transition:transform .45s cubic-bezier(.3,1.3,.4,1),opacity .45s}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="aura"></div>
+  <div class="field" id="field"></div>
+
+  <section class="screen on" id="cover">
+    <div class="emblem">💝</div>
+    <div class="eyebrow">happy birthday</div>
+    <h1 class="script" id="coverTitle">Gattu</h1>
+    <p class="coverSub">I've hidden four little treasures around our home, my love. Follow the trail, solve each clue, and a sweet surprise waits at the end…</p>
+    <button class="btn btn-primary" id="beginBtn">Begin the adventure ✨</button>
+  </section>
+
+  <section class="screen" id="map">
+    <div class="iconbtn" id="soundBtn" style="right:14px" aria-label="Toggle sound">🔊</div>
+    <div class="iconbtn" id="resetBtn" style="right:62px" aria-label="Start over">↺</div>
+    <div class="stagewrap" id="stagewrap">
+      <div class="stage" id="stage">
+        <svg class="map" viewBox="0 0 460 880" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+            <symbol id="hrt" viewBox="0 0 32 29"><path d="M16 28 C16 28 3 19 3 10.5 C3 6 6.5 3 10 3 C12.8 3 14.8 4.7 16 6.5 C17.2 4.7 19.2 3 22 3 C25.5 3 29 6 29 10.5 C29 19 16 28 16 28 Z"/></symbol>
+            <symbol id="spk" viewBox="0 0 10 10"><path d="M5 0 C5.4 3.4 6.6 4.6 10 5 C6.6 5.4 5.4 6.6 5 10 C4.6 6.6 3.4 5.4 0 5 C3.4 4.6 4.6 3.4 5 0 Z"/></symbol>
+            <radialGradient id="vig" cx="50%" cy="42%" r="78%"><stop offset="58%" stop-color="#fbe9d8" stop-opacity="0"/><stop offset="100%" stop-color="#e3b387" stop-opacity=".4"/></radialGradient>
+          </defs>
+
+          <ellipse fill="#ffffff" opacity=".2" cx="150" cy="210" rx="46" ry="24"/>
+          <ellipse fill="#ffffff" opacity=".18" cx="140" cy="690" rx="48" ry="26"/>
+
+          <!-- sun -->
+          <g><circle cx="100" cy="158" r="15" fill="#d8ab46"/><circle cx="100" cy="158" r="10" fill="#fff6ee"/>
+            <g stroke="#d8ab46" stroke-width="2.4" stroke-linecap="round"><line x1="100" y1="132" x2="100" y2="139"/><line x1="100" y1="177" x2="100" y2="184"/><line x1="74" y1="158" x2="81" y2="158"/><line x1="119" y1="158" x2="126" y2="158"/><line x1="82" y1="140" x2="87" y2="145"/><line x1="118" y1="176" x2="113" y2="171"/></g></g>
+
+          <!-- birds -->
+          <g fill="none" stroke="#c08aa2" stroke-width="2.4" stroke-linecap="round" opacity=".85">
+            <path d="M104 244 q7 -8 14 0 q7 -8 14 0"/>
+            <path d="M138 226 q5.5 -6 11 0 q5.5 -6 11 0"/>
+            <path d="M92 224 q5 -5 10 0 q5 -5 10 0"/>
+          </g>
+
+          <!-- heart pond + little sailboat -->
+          <use href="#hrt" x="298" y="396" width="98" height="89" fill="#bcd8ec" opacity=".7"/>
+          <use href="#hrt" x="318" y="416" width="58" height="53" fill="#a6cbe6" opacity=".45"/>
+          <path d="M322 470 q25 9 50 0" fill="none" stroke="#9cc3de" stroke-width="2" stroke-linecap="round" opacity=".6"/>
+          <g><path d="M333 451 h30 l-6 10 h-18 Z" fill="#fff6ee" stroke="#d8ab46" stroke-width="1.2"/><line x1="348" y1="451" x2="348" y2="427" stroke="#b07a5c" stroke-width="1.8"/><path d="M349 429 L367 449 L349 449 Z" fill="#e88aa6"/></g>
+
+          <!-- trees -->
+          <g><rect x="118" y="588" width="9" height="26" rx="2" fill="#b07a5c"/><circle cx="122" cy="578" r="24" fill="#9cbf86"/><circle cx="106" cy="588" r="16" fill="#7ea76a"/><circle cx="138" cy="588" r="16" fill="#7ea76a"/><circle cx="115" cy="572" r="3.2" fill="#f3a9c4"/><circle cx="130" cy="570" r="3.2" fill="#f3a9c4"/></g>
+          <g><rect x="372" y="318" width="8" height="22" rx="2" fill="#b07a5c"/><circle cx="376" cy="310" r="20" fill="#9cbf86"/><circle cx="362" cy="318" r="13" fill="#7ea76a"/><circle cx="390" cy="318" r="13" fill="#7ea76a"/><circle cx="370" cy="304" r="3" fill="#f3a9c4"/></g>
+
+          <!-- cat (TUTU) -->
+          <g transform="translate(-18,12)">
+            <g fill="#e8923f">
+              <path d="M150 474 q20 2 16 -22 q-2 -9 -8 -7 q5 4 4 12 q-2 13 -16 11 Z"/>
+              <path d="M120 476 q-8 -34 16 -38 q24 4 16 38 Z"/>
+              <circle cx="136" cy="436" r="12"/>
+              <path d="M127 430 l-3 -10 l9 4 Z"/><path d="M145 430 l3 -10 l-9 4 Z"/>
+            </g>
+            <g fill="#5a3a48"><circle cx="132" cy="437" r="1.2"/><circle cx="140" cy="437" r="1.2"/></g>
+            <path d="M134 441 q2 2 4 0" fill="none" stroke="#5a3a48" stroke-width="1" stroke-linecap="round"/>
+          </g>
+
+          <!-- start cottage -->
+          <g><rect x="86" y="772" width="40" height="26" rx="2" fill="#fff6ee" stroke="#d8ab46" stroke-width="1.5"/><path d="M82 772 L106 752 L130 772 Z" fill="#d4537e"/><rect x="100" y="782" width="12" height="16" rx="2" fill="#c63f74"/><line x1="106" y1="752" x2="106" y2="738" stroke="#b9863a" stroke-width="2"/><use href="#hrt" x="106" y="732" width="15" height="14" fill="#d8ab46"/></g>
+          <text x="106" y="816" font-family="Cormorant Garamond, serif" font-style="italic" font-size="18" fill="#b13e69" text-anchor="middle">start</text>
+
+          <!-- trail -->
+          <path fill="none" stroke="#e7b96a" stroke-width="7.5" stroke-linecap="round" opacity=".5" d="M110 800 C170 760 140 712 195 668 C250 624 330 628 345 560 C356 508 262 478 170 440 C95 408 150 356 255 326 C345 300 380 236 330 192 C300 165 250 150 220 132"/>
+          <path id="trailProg" fill="none" stroke="#bd8a33" stroke-width="3.5" stroke-dasharray="1.5 10" stroke-linecap="round" marker-end="url(#ar)" d="M110 800 C170 760 140 712 195 668 C250 624 330 628 345 560 C356 508 262 478 170 440 C95 408 150 356 255 326 C345 300 380 236 330 192 C300 165 250 150 220 132"/>
+
+          <!-- treasure heart -->
+          <ellipse cx="222" cy="140" rx="60" ry="54" fill="#ffffff" opacity=".28"/>
+          <use href="#hrt" x="184" y="104" width="76" height="69" fill="#b9863a" opacity=".35"/>
+          <use href="#hrt" x="188" y="106" width="68" height="62" fill="#d4537e"/>
+          <use href="#hrt" x="204" y="120" width="30" height="27" fill="#f4bcce" opacity=".6"/>
+          <use href="#spk" x="248" y="108" width="15" height="15" fill="#d8ab46"/>
+          <use href="#spk" x="172" y="120" width="12" height="12" fill="#d8ab46"/>
+
+          <!-- compass -->
+          <g><circle cx="372" cy="724" r="42" fill="#fff6ee" stroke="#d8ab46" stroke-width="2"/>
+            <path d="M372 686 L379 717 L410 724 L379 731 L372 762 L365 731 L334 724 L365 717 Z" fill="#d8ab46"/>
+            <path d="M372 700 L377 720 L392 724 L377 728 L372 748 L367 728 L352 724 L367 720 Z" fill="#fff6ee"/>
+            <use href="#hrt" x="365" y="718" width="14" height="13" fill="#d4537e"/>
+            <text x="372" y="684" font-family="Cormorant Garamond, serif" font-weight="600" font-size="12" fill="#8a5a44" text-anchor="middle">N</text>
+            <text x="420" y="728" font-family="Cormorant Garamond, serif" font-weight="600" font-size="12" fill="#8a5a44" text-anchor="middle">E</text>
+            <text x="372" y="780" font-family="Cormorant Garamond, serif" font-weight="600" font-size="12" fill="#8a5a44" text-anchor="middle">S</text>
+            <text x="324" y="728" font-family="Cormorant Garamond, serif" font-weight="600" font-size="12" fill="#8a5a44" text-anchor="middle">W</text></g>
+
+          <use href="#spk" x="60" y="430" width="12" height="12" fill="#d8ab46"/>
+          <use href="#hrt" x="400" y="560" width="12" height="11" fill="#d4537e"/>
+          <use href="#spk" x="396" y="200" width="12" height="12" fill="#d8ab46"/>
+          <text x="230" y="852" font-family="Cormorant Garamond, serif" font-style="italic" font-size="20" fill="#b13e69" text-anchor="middle">a map made with love</text>
+        </svg>
+
+        <div class="node" id="node1"><span class="ic"></span><span class="tag">tap me</span></div>
+        <div class="node" id="node2"><span class="ic"></span><span class="tag">tap me</span></div>
+        <div class="node" id="node3"><span class="ic"></span><span class="tag">tap me</span></div>
+        <div class="node" id="node4"><span class="ic"></span><span class="tag">tap me</span></div>
+
+        <div class="avatar" id="avatar" style="offset-distance:0%"><div class="ring" id="avatarRing">🙂</div></div>
+      </div>
     </div>
-    
-    <div class="card" style="border-color:#d4537e">
-      <div class="panel msg">
-        <div class="corner tl">♥</div><div class="corner tr">♥</div>
-        <div class="ribbon">✦ ❤ ✦</div>
-        <div class="tnum">to begin</div>
-        <div class="gift">💝 your adventure begins</div>
-        <p class="note">Happy birthday, my Gattu 💝 I've hidden four little treasures around our home for you. Scan this to open your hunt, then follow the trail — a sweet surprise waits at the end. I love you.</p>
-        <div class="sign">— with all my love</div>
-      </div>
-      <div class="fold"><span>fold</span></div>
-      <div class="panel scan">
-        <div class="corner tl gold">♥</div><div class="corner tr gold">♥</div>
-        <div class="scanttl">scan to open<br>your treasure hunt</div>
-        <img class="qr" src="data:image/png;base64,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" alt="QR code">
-        <div class="code" style="font-size:13px;letter-spacing:.04em">shabangg.github.io/romatic-birthday</div>
-      </div>
+    <div class="mapfield" id="mapfield"></div>
+
+    <div class="maptopbar">
+      <div class="script">Your trail</div>
+      <div class="progress" id="mapProgress">0 of 4 treasures found</div>
+      <div class="tip" id="mapTip" style="pointer-events:none">Tap the glowing stop to read your clue 💗</div>
     </div>
-    <div class="card">
-      <div class="panel msg">
-        <div class="corner tl">♥</div><div class="corner tr">♥</div>
-        <div class="ribbon">✦ ❤ ✦</div>
-        <div class="tnum">treasure no. 1</div>
-        <div class="gift">💎 the necklace</div>
-        <p class="note">Treasure number one is yours. Something pretty to rest right over your heart, almost as close as you are to mine. Scan to chase the next one.</p>
-        <div class="sign">— with all my love</div>
-      </div>
-      <div class="fold"><span>fold</span></div>
-      <div class="panel scan">
-        <div class="corner tl gold">♥</div><div class="corner tr gold">♥</div>
-        <div class="scanttl">scan to unlock<br>your next clue</div>
-        <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAIAAAAHjs1qAAAD8klEQVR4nO3dMY5TMRRAUYJYEFthPdSsh62wmhRphpYCmY88Hju55/RRvvKv3Dw95/b2uH+Chs+7HwA+jtwJkTshcidE7oTInRC5EyJ3QuROiNwJkTshcidE7oTInRC5EyJ3QuROiNwJkTshX2Y+/P3rt/d6jkP8+PVz9yP8xfh3Hj+zd/QnpzshcidE7oTInRC5EyJ3QuROiNwJkTshU1PVsWecUK777Myvse6XfL13NOZ0J0TuhMidELkTIndC5E6I3AmROyFyJ2ThVHVs3eRs16RwZmd03WdnvN47croTIndC5E6I3AmROyFyJ0TuhMidELkTsm2q+np2bcFyndOdELkTIndC5E6I3AmROyFyJ0TuhMidEFPVI5x5E+/rcboTIndC5E6I3AmROyFyJ0TuhMidELkTsm2qao54vtd7R053QuROiNwJkTshcidE7oTInRC5EyJ3QhZOVWu32s78N+rYuv9Vrb0jpzshcidE7oTInRC5EyJ3QuROiNwJkTsht7fHffcz8A/rpqo1TndC5E6I3AmROyFyJ0TuhMidELkTIndCtt0AbP/yupkt2HUbtOusmxM73QmROyFyJ0TuhMidELkTIndC5E6I3AmZ2lU9cyY3tmuzc9e+6ZnfO2PmmZ3uhMidELkTIndC5E6I3AmROyFyJ0TuhBx6A7D9y+vO/K3WbRubqsIlcidE7oTInRC5EyJ3QuROiNwJkTshUzcAP+Me5Lop45lzxLFdNy3vmnw73QmROyFyJ0TuhMidELkTIndC5E6I3AlZ+L+qZ+6M7prI7pqMnvkWdnG6EyJ3QuROiNwJkTshcidE7oTInRC5E3LoDcBn2nXX7pnT3DNvDx5zuhMid0LkTojcCZE7IXInRO6EyJ0QuRMyNVV9vT3I2mS0xulOiNwJkTshcidE7oTInRC5EyJ3QuROyMIbgM+cBe6aBK/73nUT2WfcRh1zuhMid0LkTojcCZE7IXInRO6EyJ0QuROycKo69owTu12brOucuW28bk7sdCdE7oTInRC5EyJ3QuROiNwJkTshcidk21SV62r3A/tfVXgHcidE7oTInRC5EyJ3QuROiNwJkTshpqr/YWa6Of7smTujY7vuFrarCpfInRC5EyJ3QuROiNwJkTshcidE7oRsm6o+44blzNz0zDt+dz3VuruUx5zuhMidELkTIndC5E6I3AmROyFyJ0TuhCycqj7j/uU66/Zcx86c5u7idCdE7oTInRC5EyJ3QuROiNwJkTshcifk9va4734G+CBOd0LkTojcCZE7IXInRO6EyJ0QuRMid0LkTojcCZE7IXInRO6EyJ0QuRMid0LkTojcCfkNCc7bj1gFW80AAAAASUVORK5CYII=" alt="QR code">
-        <div class="code">TUTU-7K2M</div>
+  </section>
+
+  <section class="screen" id="clue">
+    <div class="iconbtn backbtn" id="clueBack" aria-label="Back to map">←</div>
+    <div class="cluecard">
+      <div class="gifticon" id="clueGift">🎁</div>
+      <div class="cluelabel" id="clueLabel">Clue 1 of 4</div>
+      <div class="riddle" id="clueRiddle">…</div>
+      <div class="hints" id="clueHints"></div>
+      <div class="scanrow"><button class="btn btn-primary" id="openScan">I found it — scan the card 📷</button></div>
+    </div>
+  </section>
+
+  <div class="overlay" id="scanOv">
+    <div class="sheet">
+      <div class="script" style="font-size:28px;margin-bottom:4px">Scan your clue</div>
+      <div class="scanmsg" id="scanMsg">Point the camera at the QR on the card…</div>
+      <div id="reader"></div>
+      <input class="codeinput" id="codeInput" placeholder="or type the code here" autocomplete="off">
+      <div style="display:flex;gap:10px;margin-top:12px;justify-content:center">
+        <button class="btn btn-ghost" id="scanCancel">Cancel</button>
+        <button class="btn btn-primary" id="codeSubmit">Unlock 💖</button>
       </div>
     </div>
   </div>
-  <div class="page">
-    <div class="guide"><h1>Her treasure cards · page 2</h1></div>
-    
-    <div class="card">
-      <div class="panel msg">
-        <div class="corner tl">♥</div><div class="corner tr">♥</div>
-        <div class="ribbon">✦ ❤ ✦</div>
-        <div class="tnum">treasure no. 2</div>
-        <div class="gift">👠 the heels</div>
-        <p class="note">Two down, gorgeous. A little height for a big night ahead. Scan whenever you're ready for clue number three, my love.</p>
-        <div class="sign">— with all my love</div>
+
+  <div class="overlay" id="unlock">
+    <div class="sheet">
+      <div class="chest">
+        <div class="rays" id="rays"></div>
+        <div class="locket"><div class="lh" id="lhTop">💗</div><div class="giftpop" id="giftPop">🎁</div></div>
       </div>
-      <div class="fold"><span>fold</span></div>
-      <div class="panel scan">
-        <div class="corner tl gold">♥</div><div class="corner tr gold">♥</div>
-        <div class="scanttl">scan to unlock<br>your next clue</div>
-        <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAIAAAAHjs1qAAAED0lEQVR4nO3dsXEbMRBAUdOjgtyK63HsetyKqmHAhE4VYcaGIOD438spHXl/NtnB3e35uH+Dhu+7LwC+jtwJkTshcidE7oTInRC5EyJ3QuROiNwJkTshcidE7oTInRC5EyJ3QuROiNwJkTshbzMf/vXj52ddxyF+v//578+Of42ZvzzDPfrIdCdE7oTInRC5EyJ3QuROiNwJkTshcidkaqs6tmuPOHbmlnHmqmZ+59o9Mt0JkTshcidE7oTInRC5EyJ3QuROiNwJWbhVHVu3OTtzUzjj9c657vpGpjshcidE7oTInRC5EyJ3QuROiNwJkTsh27aqr2fdmdEzny18RaY7IXInRO6EyJ0QuRMid0LkTojcCZE7Ibaq/2DXc3r5LKY7IXInRO6EyJ0QuRMid0LkTojcCZE7Idu2qlfcMs5c8xXPm555VTNMd0LkTojcCZE7IXInRO6EyJ0QuRMid0IWblXXvZVzlytuRsde7x6Nme6EyJ0QuRMid0LkTojcCZE7IXInRO6E3J6P++5ruIx1W9XX29eeyXQnRO6EyJ0QuRMid0LkTojcCZE7IXInZNtWddc7SmunM8fGv+Tr7XpNd0LkTojcCZE7IXInRO6EyJ0QuRMid0IOfQLwzLZv5i/P2HWSdezMvemuO2i6EyJ3QuROiNwJkTshcidE7oTInRC5E7Jwqzq2bmO3bo+47pzrru1m7dSv6U6I3AmROyFyJ0TuhMidELkTIndC5E7Itq3q2Lot465TsGduc888E7zu+5ruhMidELkTIndC5E6I3AmROyFyJ0TuhEy9V/XM04q7NpRjZ24Zx6745tQx050QuRMid0LkTojcCZE7IXInRO6EyJ2Qqa1qzZnnTcfWbXPPPF87ZroTIndC5E6I3AmROyFyJ0TuhMidELkTMvUE4DPPqs7YdaJ03f9d9yzlXU9LnmG6EyJ3QuROiNwJkTshcidE7oTInRC5E7LwvapnPj/2irvAdZvRdda9+3aG6U6I3AmROyFyJ0TuhMidELkTIndC5E7Iwq3q2JlPiF3HRvajXed6TXdC5E6I3AmROyFyJ0TuhMidELkTIndCtm1Vr2hmF7jrjGxtbzpmuhMid0LkTojcCZE7IXInRO6EyJ0QuRNiq3qEdXvEXe++PfPEsOlOiNwJkTshcidE7oTInRC5EyJ3QuROyLat6plbt7GZax5vN9edN113zTOf3XX3TXdC5E6I3AmROyFyJ0TuhMidELkTIndCFm5Vd52SPNOZ71Udu+IWecx0J0TuhMidELkTIndC5E6I3AmROyFyJ+T2fNx3XwN8EdOdELkTIndC5E6I3AmROyFyJ0TuhMidELkTIndC5E6I3AmROyFyJ0TuhMidELkTIndC/gLJLOq7lMpW6gAAAABJRU5ErkJggg==" alt="QR code">
-        <div class="code">TUTU-9X4P</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="panel msg">
-        <div class="corner tl">♥</div><div class="corner tr">♥</div>
-        <div class="ribbon">✦ ❤ ✦</div>
-        <div class="tnum">treasure no. 3</div>
-        <div class="gift">👗 the dress</div>
-        <p class="note">Look at you, my love. Something beautiful to twirl in tonight. Just one treasure left now — scan and go find it.</p>
-        <div class="sign">— with all my love</div>
-      </div>
-      <div class="fold"><span>fold</span></div>
-      <div class="panel scan">
-        <div class="corner tl gold">♥</div><div class="corner tr gold">♥</div>
-        <div class="scanttl">scan to unlock<br>your next clue</div>
-        <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAIAAAAHjs1qAAAEBUlEQVR4nO3dwVEcMRBAUeNyQE7F8fjseJyKo+HABWcwRaEVrdn/3p1lYH/p0tWal/e312/Q8H36AeDryJ0QuRMid0LkTojcCZE7IXInRO6EyJ0QuRMid0LkTojcCZE7IXInRO6EyJ0QuRPyY+WHf//89ajnOMSff38//bPX/43rT175T+775DOtfEdOd0LkTojcCZE7IXInRO6EyJ0QuRMid0KWpqrXVqZf+6xMGc+cm654vu/omtOdELkTIndC5E6I3AmROyFyJ0TuhMidkI1T1Wv7JmdTM8ipfdN9f+8dv6NrTndC5E6I3AmROyFyJ0TuhMidELkTIndCxqaqz2dlMjo1N61xuhMid0LkTojcCZE7IXInRO6EyJ0QuRNiqvow+yajZq6P4nQnRO6EyJ0QuRMid0LkTojcCZE7IXInZGyqesdZ4L4bcc+cm97xO7rmdCdE7oTInRC5EyJ3QuROiNwJkTshcidk41R13wzyTPvejTq1Bft8nO6EyJ0QuRMid0LkTojcCZE7IXInRO6EvLy/vU4/w22cuVHKxzndCZE7IXInRO6EyJ0QuRMid0LkTojcCbnle1WnNizP3Chdeapr++bEU/NppzshcidE7oTInRC5EyJ3QuROiNwJkTshS7uqpptf88nX7Mh+nNOdELkTIndC5E6I3AmROyFyJ0TuhMidkI27qmduOtZu8b3jm1PtqsIDyJ0QuRMid0LkTojcCZE7IXInRO6EjO2qPt/O6LUzn2rFHXdzne6EyJ0QuRMid0LkTojcCZE7IXInRO6EHPpe1ak3iV7b93v3TRlru7nXnO6EyJ0QuRMid0LkTojcCZE7IXInRO6ELO2q1py5m7ti35z4zF1kpzshcidE7oTInRC5EyJ3QuROiNwJkTshS7uqZ95Mu2JlYjc1R9w3gzxzErzC6U6I3AmROyFyJ0TuhMidELkTIndC5E7IxhuAz7xddt+0b2qz88yt0GtTbTjdCZE7IXInRO6EyJ0QuRMid0LkTojcCRl7r+rUrbZT9j3V872T1Q3A8AByJ0TuhMidELkTIndC5E6I3AmROyFjU9U7WplB7pt9Tt3Tu+/W4n2c7oTInRC5EyJ3QuROiNwJkTshcidE7oSYqj7M1N7n1EbptTOfyulOiNwJkTshcidE7oTInRC5EyJ3QuROyNhU9cx7eqeszCCn3n469YZaNwDDh8idELkTIndC5E6I3AmROyFyJ0TuhGycqk7d8nqmM9+rumLq5uEVTndC5E6I3AmROyFyJ0TuhMidELkTIndCXt7fXqefAb6I050QuRMid0LkTojcCZE7IXInRO6EyJ0QuRMid0LkTojcCZE7IXInRO6EyJ0QuRMid0L+A05D/cP0QbHmAAAAAElFTkSuQmCC" alt="QR code">
-        <div class="code">TUTU-5R8N</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="panel msg">
-        <div class="corner tl">♥</div><div class="corner tr">♥</div>
-        <div class="ribbon">✦ ❤ ✦</div>
-        <div class="tnum">treasure no. 4</div>
-        <div class="gift">❤️ one last surprise</div>
-        <p class="note">You found them all, Gattu. Now get dressed up, beautiful — a special evening is waiting for us tonight. Scan for your very last surprise.</p>
-        <div class="sign">— with all my love</div>
-      </div>
-      <div class="fold"><span>fold</span></div>
-      <div class="panel scan">
-        <div class="corner tl gold">♥</div><div class="corner tr gold">♥</div>
-        <div class="scanttl">scan to unlock<br>your next clue</div>
-        <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAIAAAAHjs1qAAAEBElEQVR4nO3dsXEUQRBAUY4iIFIhHmziIRWikSFHuFhbokajntv/nn+n1d6vdrpm9/H2+vIFGr5OXwB8HrkTIndC5E6I3AmROyFyJ0TuhMidELkTIndC5E6I3AmROyFyJ0TuhMidELkTIndCvq18+Of3Hx91HYf49ef3pm++vlfXf3ffZ5/Rym9kuhMid0LkTojcCZE7IXInRO6EyJ0QuROytFW9tm9DuWJly7jy2ZW7se9O3u83uma6EyJ3QuROiNwJkTshcidE7oTInRC5E7Jxq3pt3+bsGTeFz3jNK6b+X9OdELkTIndC5E6I3AmROyFyJ0TuhMidkLGtas2+Z/zyfqY7IXInRO6EyJ0QuRMid0LkTojcCZE7IbaqR7Bz/RymOyFyJ0TuhMidELkTIndC5E6I3AmROyFjW9X77QL3bUan7tX9fiPTnRC5EyJ3QuROiNwJkTshcidE7oTInZCNW9V9b+Ws2XdWtfYbme6EyJ0QuRMid0LkTojcCZE7IXInRO6EPN5eX6av4Samdp/3O1G6j+lOiNwJkTshcidE7oTInRC5EyJ3QuROyNgTgJ2//NfKNa/cyTPv1b49selOiNwJkTshcidE7oTInRC5EyJ3QuROyNgTgO93dnPfhnJlMzp1r6b2xNdMd0LkTojcCZE7IXInRO6EyJ0QuRMid0KWtqpTm7OpjeyZ29xrU2dVzzxtbLoTIndC5E6I3AmROyFyJ0TuhMidELkTsvG9qmeekpzam565v1wx9eRhZ1XhXeROiNwJkTshcidE7oTInRC5EyJ3QsbOqj7jN+/bBU5dVY3pTojcCZE7IXInRO6EyJ0QuRMid0LkTsjGs6r384ynYM98c+q1fddsuhMid0LkTojcCZE7IXInRO6EyJ0QuROytFW93ynJqbeQrrjfu2D3Md0JkTshcidE7oTInRC5EyJ3QuROiNwJWXoC8LUzN3ZnnrCcOgX7jO9GXWG6EyJ3QuROiNwJkTshcidE7oTInRC5E7Jxq3rtzO3myjfX3ro6dc0rv6/pTojcCZE7IXInRO6EyJ0QuRMid0LkTsjYVvV+zjybu7L7XNlurtwN71WFDyB3QuROiNwJkTshcidE7oTInRC5E2Kr+h+m3qu6bzO67++e+fRg050QuRMid0LkTojcCZE7IXInRO6EyJ2Qsa3qmSc7r01tGc98iu+ZO9drpjshcidE7oTInRC5EyJ3QuROiNwJkTshG7eqUyc7z7TvXaFT+8sz96bXTHdC5E6I3AmROyFyJ0TuhMidELkTIndCHm+vL9PXAJ/EdCdE7oTInRC5EyJ3QuROiNwJkTshcidE7oTInRC5EyJ3QuROiNwJkTshcidE7oTInZC/iDgIpk+8dloAAAAASUVORK5CYII=" alt="QR code">
-        <div class="code">TUTU-LOVE</div>
-      </div>
+      <div class="unlocktitle" id="unlockTitle">found it!</div>
+      <div class="unlocksub" id="unlockSub">one treasure closer 💕</div>
+      <button class="btn btn-primary" id="unlockNext" style="margin-top:22px">Onward ✨</button>
     </div>
   </div>
-</body></html>
+
+  <section class="screen" id="finale">
+    <div class="ribbon">🎀</div>
+    <div class="bdayline" style="font-size:30px">happy birthday</div>
+    <div class="bdayline" id="bdayName" style="font-size:60px"></div>
+    <p class="finaleMsg" id="finaleMsg"></p>
+    <div class="ribbon">🍷✨🍽️</div>
+    <button class="btn btn-ghost" id="restartBtn" style="margin-top:18px">Play again</button>
+  </section>
+
+  <canvas class="confcanvas" id="conf"></canvas>
+  <audio id="bgm" loop preload="auto"></audio>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const CONFIG = {
+  name: "Gattu",
+  photo: "",
+  music: "music.mp3",   /* upload your track as music.mp3 next to index.html in the repo */
+  stops: [
+    { gift:"the necklace", icon:"💎", loc:"controller", code:"TUTU-7K2M",
+      riddle:"Where do our two-player adventures begin? Open the place that holds the keys to our co-op journeys.",
+      hints:["It lives in the living room.","You need these to play together.","Look in the drawer where our controllers hide."] },
+    { gift:"the heels", icon:"👠", loc:"wardrobe", code:"TUTU-9X4P",
+      riddle:"To stand tall tonight, find what's tucked away where fabric hides — in the room where work gets done.",
+      hints:["It's in the second bedroom.","Not the steel one… the soft, fabric one.","Behind the sheets, in the cloth wardrobe."] },
+    { gift:"the dress", icon:"👗", loc:"hanger", code:"TUTU-5R8N",
+      riddle:"Cinderella had a fairy godmother for her gown. You just need the place where our wardrobe dreams hang side by side, in the room where we say goodnight.",
+      hints:["It's in our bedroom.","Where your everyday outfits hang.","Our main cupboard."] },
+    { gift:"one last surprise", icon:"❤️", loc:"cat", code:"TUTU-LOVE",
+      riddle:"You've got the look — now where's the night going? The answer hides where someone small and furry dreams the highest. Look beneath her throne.",
+      hints:["It's in our bedroom.","TUTU's favourite high perch.","Underneath her tree 🐱."] }
+  ],
+  finaleMessage: "You found every treasure 💗 But the night isn't over… dinner is waiting for us on <b>the terrace</b> tonight. Get dressed, gorgeous — I'll meet you upstairs."
+};
+
+const ICONS = {
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.4" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  controller:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9h10a4 4 0 0 1 3.9 3.1l.8 4A2.4 2.4 0 0 1 17 17.6L15.5 16h-7L7 17.6A2.4 2.4 0 0 1 2.3 16.1l.8-4A4 4 0 0 1 7 9Z"/><line x1="7" y1="12" x2="7" y2="14"/><line x1="6" y1="13" x2="8" y2="13"/><circle cx="16" cy="12.6" r=".7" fill="currentColor" stroke="none"/><circle cx="17.6" cy="14" r=".7" fill="currentColor" stroke="none"/></svg>',
+  wardrobe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="1.5"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="10" y1="10.5" x2="10" y2="12.5"/><line x1="14" y1="10.5" x2="14" y2="12.5"/></svg>',
+  hanger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8a2 2 0 1 1 2.2 2c-1.2.2-2.2 1-2.2 2.2"/><path d="M12 12.4 4 18h16l-8-5.6Z"/></svg>',
+  cat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10 4 4.5 8.6 8a7 7 0 0 1 6.8 0L20 4.5 19 10"/><path d="M5 10v2.5a7 7 0 0 0 14 0V10"/><circle cx="9.6" cy="13" r=".7" fill="currentColor" stroke="none"/><circle cx="14.4" cy="13" r=".7" fill="currentColor" stroke="none"/><path d="M11 15.2h2"/></svg>'
+};
+
+const S = { done:[false,false,false,false], current:0, muted:false };
+const $ = id => document.getElementById(id);
+function load(){ try{ const r=JSON.parse(localStorage.getItem('tutu_hunt')||'{}'); if(r.done)S.done=r.done; if(r.muted)S.muted=r.muted; }catch(e){} }
+function save(){ try{ localStorage.setItem('tutu_hunt',JSON.stringify({done:S.done,muted:S.muted})); }catch(e){} }
+load();
+
+(function(){ const f=$('field');
+  for(let i=0;i<14;i++){const h=document.createElement('span');h.className='fh';h.textContent='♥';
+    h.style.left=(Math.random()*100)+'%';h.style.fontSize=(9+Math.random()*16)+'px';h.style.animationDuration=(8+Math.random()*8)+'s';
+    h.style.animationDelay=(Math.random()*9)+'s';h.style.color=Math.random()>.62?'#d8ab46':'#e58bab';f.appendChild(h);}
+  for(let i=0;i<16;i++){const t=document.createElement('span');t.className='tw';t.textContent='✦';
+    t.style.left=(Math.random()*100)+'%';t.style.top=(Math.random()*100)+'%';t.style.fontSize=(6+Math.random()*8)+'px';
+    t.style.animationDuration=(2+Math.random()*3)+'s';t.style.animationDelay=(Math.random()*4)+'s';f.appendChild(t);}
+})();
+
+(function(){ const f=$('mapfield'); if(!f)return;
+  for(let i=0;i<12;i++){const h=document.createElement('span');h.className='fh';h.textContent=Math.random()>.5?'♥':'❤';
+    h.style.left=(Math.random()*100)+'%';h.style.fontSize=(11+Math.random()*18)+'px';h.style.animationDuration=(7+Math.random()*7)+'s';
+    h.style.animationDelay=(Math.random()*8)+'s';h.style.color=Math.random()>.6?'#d8843a':'#e2618c';f.appendChild(h);}
+})();
+
+let AC=null, musicGain=null;
+function audio(){ if(!AC){ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+    if(AC){ musicGain=AC.createGain(); musicGain.gain.value=0.6; musicGain.connect(AC.destination); } }
+  if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+function tone(freq,start,dur,type,vol){ const ac=audio(); if(!ac||S.muted)return;
+  const o=ac.createOscillator(),g=ac.createGain(); o.type=type||'sine'; o.frequency.value=freq; const t=ac.currentTime+start;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol||.18,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(ac.destination); o.start(t);o.stop(t+dur+.02); }
+const sfx={ pop(){tone(520,0,.12,'sine',.16);tone(780,.02,.12,'sine',.1);}, tick(){tone(1200,0,.05,'square',.05);},
+  hint(){tone(440,0,.18,'sine',.14);tone(660,.08,.22,'sine',.12);}, chime(){[523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.5,'sine',.16));},
+  sparkle(){[880,1047,1319,1568,2093].forEach((f,i)=>tone(f,i*.06,.4,'triangle',.1));}, whoosh(){tone(300,0,.4,'sine',.06);tone(420,.05,.45,'sine',.05);},
+  fanfare(){[[523,0],[523,.12],[523,.24],[698,.4],[659,.62],[784,.82]].forEach(([f,t])=>{tone(f,t,.5,'triangle',.18);tone(f/2,t,.5,'sine',.08);});[1047,1319,1568].forEach((f,i)=>tone(f,1.0+i*.04,.9,'sine',.14));} };
+function setMute(m){ S.muted=m; $('soundBtn').textContent=m?'🔇':'🔊'; save(); }
+setMute(S.muted);
+
+/* ---- soft background music: original looping melody, or your own file if CONFIG.music is set ---- */
+const bgm=$('bgm');
+let musicOn=false, musicTimer=null, musicStep=0;
+const CHORDS=[
+  {pad:[130.81,196.00,261.63], arp:[261.63,329.63,392.00,523.25]},  /* C  */
+  {pad:[98.00,196.00,246.94],  arp:[246.94,329.63,392.00,493.88]},  /* G  */
+  {pad:[110.00,164.81,261.63], arp:[261.63,329.63,440.00,523.25]},  /* Am */
+  {pad:[87.31,174.61,261.63],  arp:[261.63,349.23,440.00,523.25]}   /* F  */
+];
+function padNote(f,t,dur){ const o=AC.createOscillator(),g=AC.createGain(); o.type='triangle'; o.frequency.value=f;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.022,t+.6); g.gain.setValueAtTime(.022,t+dur*0.7);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur); o.connect(g); g.connect(musicGain); o.start(t); o.stop(t+dur+.05); }
+function arpNote(f,t){ const o=AC.createOscillator(),g=AC.createGain(); o.type='sine'; o.frequency.value=f;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.03,t+.04); g.gain.exponentialRampToValueAtTime(.0001,t+1.1);
+  o.connect(g); g.connect(musicGain); o.start(t); o.stop(t+1.2); }
+function scheduleMusic(){ if(!musicOn)return; const ac=audio();
+  if(!ac||ac.state!=='running'){ musicTimer=setTimeout(scheduleMusic,300); return; }
+  const dur=3.6, t=ac.currentTime+0.06, c=CHORDS[musicStep%CHORDS.length];
+  c.pad.forEach(f=>padNote(f,t,dur));
+  c.arp.forEach((f,i)=>arpNote(f,t+0.25+i*(dur*0.2)));
+  musicStep++; musicTimer=setTimeout(scheduleMusic,dur*1000); }
+function startMusic(){ if(CONFIG.music){ if(bgm){ if(!bgm.src) bgm.src=CONFIG.music; bgm.volume=0.35; bgm.play().catch(()=>{}); } return; }
+  if(musicOn)return; musicOn=true; audio(); scheduleMusic(); }
+function stopMusic(){ if(CONFIG.music){ if(bgm)bgm.pause(); return; } musicOn=false; if(musicTimer){clearTimeout(musicTimer);musicTimer=null;} }
+function updateMusic(){ if(S.muted)stopMusic(); else startMusic(); }
+
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $(id).classList.add('on'); }
+function overlay(id,on){ $(id).classList.toggle('on',on); }
+
+$('coverTitle').textContent = CONFIG.name;
+function applyPhoto(){ if(CONFIG.photo){ $('avatarRing').innerHTML='<img src="'+CONFIG.photo+'" alt="">'; } }
+applyPhoto();
+$('beginBtn').addEventListener('click',()=>{ audio(); sfx.chime(); enterMap(); });
+
+/* map geometry */
+const stage=$('stage'), stagewrap=$('stagewrap'), prog=$('trailProg');
+$('avatar').style.offsetPath = "path('"+prog.getAttribute('d')+"')";
+const L=prog.getTotalLength();
+const NF=[0.165,0.40,0.62,0.83];           /* where the 4 stops sit along the trail */
+const MILE=[0,NF[0],NF[1],NF[2],1];
+function nodeEl(i){ return $('node'+(i+1)); }
+function ptAt(fr){ return prog.getPointAtLength(fr*L); }
+function placeNodes(){ NF.forEach((fr,i)=>{ const p=ptAt(fr); const el=nodeEl(i); el.style.left=(p.x-24)+'px'; el.style.top=(p.y-24)+'px'; }); }
+function placeAvatar(f){ $('avatar').style.offsetDistance=(f*100).toFixed(2)+'%'; }
+function layoutStage(){ const w=stagewrap.clientWidth, h=stagewrap.clientHeight; if(!w||!h)return;
+  const sc=Math.min(w/460, h/880); const ox=(w-460*sc)/2, oy=(h-880*sc)/2;
+  stage.style.transform='translate('+ox+'px,'+oy+'px) scale('+sc+')'; }
+placeNodes();
+window.addEventListener('resize',()=>{ if($('map').classList.contains('on'))layoutStage(); });
+window.addEventListener('orientationchange',()=>{ setTimeout(()=>{ if($('map').classList.contains('on'))layoutStage(); },250); });
+
+function setNodeIcon(i){ const ic=nodeEl(i).querySelector('.ic'); ic.innerHTML = S.done[i] ? ICONS[CONFIG.stops[i].loc] : ICONS.lock; }
+function renderMap(){
+  const n=S.done.filter(Boolean).length;
+  $('mapProgress').textContent=n+' of 4 treasures found';
+  for(let i=0;i<4;i++){ const el=nodeEl(i); el.className='node'; setNodeIcon(i); el.querySelector('.tag').textContent=S.done[i]?'':'tap me'; }
+  const active=S.done.findIndex(d=>!d);
+  if(active>=0) nodeEl(active).classList.add('active');
+  placeAvatar(MILE[n]);
+  $('mapTip').textContent = active<0 ? "All found, my love 🥂" : "Tap the glowing stop to read your clue 💗";
+}
+function enterMap(){ show('map'); renderMap(); requestAnimationFrame(layoutStage); setTimeout(layoutStage,80); startNag(); updateMusic(); }
+for(let i=0;i<4;i++){ nodeEl(i).addEventListener('click',()=>{ if(nodeEl(i).classList.contains('active'))openClue(i); }); }
+
+function openClue(i){ S.current=i; const st=CONFIG.stops[i];
+  $('clueGift').textContent='🎁'; $('clueLabel').textContent='Clue '+(i+1)+' of 4'; $('clueRiddle').textContent=st.riddle;
+  const box=$('clueHints'); box.innerHTML='';
+  st.hints.forEach((h,idx)=>{ const b=document.createElement('button'); b.className='hintbtn';
+    b.innerHTML='<span class="lvl">Hint '+(idx+1)+'</span><span>tap to reveal 🔎</span>';
+    b.addEventListener('click',()=>revealHint(b,h,idx)); box.appendChild(b); });
+  show('clue'); startNag();
+}
+function revealHint(btn,text,idx){ if(btn.classList.contains('open'))return; sfx.tick();
+  btn.innerHTML='<span class="lvl">Hint '+(idx+1)+'</span><span class="glassrow"><span class="sandglass">⏳</span> thinking…</span>';
+  let ticks=0; const ti=setInterval(()=>{sfx.tick(); if(++ticks>5)clearInterval(ti);},180);
+  setTimeout(()=>{ clearInterval(ti); sfx.hint(); btn.classList.add('open');
+    btn.innerHTML='<span class="lvl">Hint '+(idx+1)+'</span><span>'+text+'</span>'; },1100);
+}
+$('clueBack').addEventListener('click',enterMap);
+
+let qr=null, scanning=false;
+function openScan(){ overlay('scanOv',true); $('scanMsg').textContent='Point the camera at the QR on the card…'; $('codeInput').value=''; startCamera(); stopNag(); }
+function closeScan(){ stopCamera(); overlay('scanOv',false); startNag(); }
+function startCamera(){ if(scanning)return; if(typeof Html5Qrcode==='undefined'){camFail();return;}
+  qr=new Html5Qrcode('reader'); scanning=true;
+  qr.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}}, txt=>checkCode(txt), ()=>{}).catch(()=>{ scanning=false; camFail(); });
+}
+function camFail(){ $('scanMsg').textContent='Camera unavailable here — just type the code from the card 💗';
+  $('reader').innerHTML='<div style="padding:30px 12px;color:#f3c6d4;font-family:Cormorant Garamond,serif;font-style:italic">📷 type your code below</div>'; }
+function stopCamera(){ if(qr&&scanning){ qr.stop().then(()=>qr.clear()).catch(()=>{}); } scanning=false; }
+function checkCode(txt){ const want=CONFIG.stops[S.current].code.trim().toUpperCase();
+  if((txt||'').trim().toUpperCase()===want){ sfx.sparkle(); stopCamera(); overlay('scanOv',false); doUnlock(S.current); }
+  else { sfx.pop(); $('scanMsg').textContent="Hmm, that's not the one, my love — make sure you're at the right spot 💗"; } }
+$('openScan').addEventListener('click',openScan);
+$('scanCancel').addEventListener('click',closeScan);
+$('codeSubmit').addEventListener('click',()=>checkCode($('codeInput').value));
+$('codeInput').addEventListener('keydown',e=>{ if(e.key==='Enter')checkCode($('codeInput').value); });
+
+function doUnlock(i){ const st=CONFIG.stops[i];
+  $('lhTop').textContent='💗'; $('giftPop').textContent=st.icon; $('giftPop').classList.remove('show');
+  $('rays').classList.remove('show'); $('unlockTitle').classList.remove('show'); $('unlockSub').classList.remove('show');
+  $('unlockTitle').textContent='you found '+st.gift+'!'; $('unlockSub').textContent='one treasure closer 💕';
+  overlay('unlock',true); sfx.chime();
+  setTimeout(()=>{ $('rays').classList.add('show'); $('lhTop').style.transform='scale(2.4)'; $('lhTop').style.opacity='0'; },120);
+  setTimeout(()=>{ $('giftPop').classList.add('show'); sfx.sparkle(); confettiBurst(.5,.45,40,['#e25b86','#d8ab46','#fff0f5']); },520);
+  setTimeout(()=>{ $('unlockTitle').classList.add('show'); $('unlockSub').classList.add('show'); },820);
+}
+$('unlockNext').addEventListener('click',()=>{ const i=S.current; $('lhTop').style.transform=''; $('lhTop').style.opacity='1';
+  overlay('unlock',false); S.done[i]=true; save(); walkTo(i); });
+
+function walkTo(i){ show('map'); requestAnimationFrame(layoutStage); layoutStage();
+  for(let k=0;k<4;k++){ const el=nodeEl(k); el.className='node'; setNodeIcon(k); el.querySelector('.tag').textContent=''; }
+  const from=MILE[i], to=MILE[i+1];
+  $('avatar').classList.add('walking'); sfx.whoosh(); stopNag();
+  const t0=performance.now(), dur=2200; let last=0; const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  function step(now){ const t=Math.min(1,(now-t0)/dur); const f=from+(to-from)*ease(t); placeAvatar(f);
+    if(now-last>240){ dropStep(f); sfx.tick(); last=now; }
+    if(t<1) requestAnimationFrame(step);
+    else { $('avatar').classList.remove('walking'); if(i+1>=4){ setTimeout(showFinale,500); } else { renderMap(); startNag(); } }
+  } requestAnimationFrame(step);
+}
+function dropStep(f){ const p=ptAt(f); const s=document.createElement('span'); s.className='step'; s.textContent='♥';
+  s.style.left=(p.x-7)+'px'; s.style.top=(p.y-7)+'px'; stage.appendChild(s); setTimeout(()=>s.remove(),1500); }
+
+function showFinale(){ const nm=CONFIG.name||'my love'; const wrap=$('bdayName'); wrap.innerHTML='';
+  [...nm].forEach((ch,idx)=>{ const sp=document.createElement('span'); sp.className='bdayName-letter';
+    sp.textContent=ch===' '?'\u00A0':ch; sp.style.animationDelay=(idx*0.08)+'s'; wrap.appendChild(sp); });
+  $('finaleMsg').innerHTML=CONFIG.finaleMessage; show('finale'); stopNag(); sfx.fanfare(); finaleConfetti();
+}
+$('restartBtn').addEventListener('click',()=>{ S.done=[false,false,false,false]; save(); enterMap(); });
+
+function sizeConf(){ const c=$('conf'); if(c){ c.width=c.clientWidth||window.innerWidth; c.height=c.clientHeight||window.innerHeight; } }
+sizeConf(); window.addEventListener('resize',sizeConf);
+const myConf=confetti.create($('conf'),{resize:true,useWorker:false});
+function confettiBurst(x,y,n,colors){ sizeConf(); myConf({particleCount:n,spread:70,origin:{x,y},colors,scalar:.9,disableForReducedMotion:true}); }
+function finaleConfetti(){ sizeConf(); const colors=['#e25b86','#d8ab46','#ffb3c9','#fff0f5','#c63f74'];
+  const heart=confetti.shapeFromText?confetti.shapeFromText({text:'❤️',scalar:2}):null; const end=Date.now()+2600;
+  (function frame(){ myConf({particleCount:5,angle:60,spread:60,origin:{x:0},colors}); myConf({particleCount:5,angle:120,spread:60,origin:{x:1},colors});
+    if(Date.now()<end)requestAnimationFrame(frame); })();
+  myConf({particleCount:120,spread:100,origin:{y:.5},colors,scalar:1.1});
+  if(heart) setTimeout(()=>myConf({particleCount:30,spread:90,origin:{y:.4},shapes:[heart],scalar:2}),300);
+}
+
+const NAGS=["Did you find the hint yet, my love? 💕","Take your time, gorgeous 💖","Psst… I hid it well, didn't I? 😉",
+  "Need another little hint, beautiful? 🔎","You're getting warmer, my love 🔥","I'm cheering for you 🥰","Almost there, sweetheart ✨"];
+let nagTimer=null, nagIdx=0;
+function popToast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); sfx.pop(); setTimeout(()=>t.classList.remove('on'),3400); }
+function startNag(){ stopNag(); nagTimer=setInterval(()=>{ if(!$('clue').classList.contains('on')&&!$('map').classList.contains('on'))return;
+  nagIdx=(nagIdx+1)%NAGS.length; popToast(NAGS[nagIdx]); },13000); }
+function stopNag(){ if(nagTimer){clearInterval(nagTimer);nagTimer=null;} }
+
+$('soundBtn').addEventListener('click',()=>{ audio(); setMute(!S.muted); if(!S.muted)sfx.pop(); updateMusic(); });
+$('resetBtn').addEventListener('click',()=>{ if(confirm('Start the whole hunt over?')){ S.done=[false,false,false,false]; save(); enterMap(); } });
+</script>
+</body>
+</html>
